@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raízen S.A. — Análise de Crédito Corporativo · Itaú BBA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #F07023;
+    --orange-light: #FFF3EC;
+    --dark: #1A1A1A;
+    --gray: #4A4A4A;
+    --light: #F5F5F5;
+    --white: #FFFFFF;
+    --border: #E0E0E0;
+    --red: #C0392B;
+    --red-light: #FDECEA;
+    --green: #1E8449;
+    --green-light: #EAF7EE;
+    --amber: #D35400;
+    --amber-light: #FFF3EC;
+    --blue-dark: #1A5276;
+    --green-dark: #3A6B3A;
+  }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #F2F2F2;
+    color: #1A1A1A;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--dark);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    border-bottom: 3px solid var(--orange);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo {
+    background: var(--orange);
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 4px 14px;
+    border-radius: 3px;
+    letter-spacing: -0.02em;
+  }
+  .header-div { width: 1px; height: 28px; background: #444; }
+  .header-title { color: #fff; font-size: 13px; letter-spacing: 0.04em; }
+  .header-title span { color: var(--orange); }
+  .header-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #2A2A2A; color: #999; font-size: 11px;
+    padding: 4px 12px; border-radius: 12px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot-red { background: var(--red); }
+  .dot-green { background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+  /* CLIENT CARD */
+  .client-card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 20px 28px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--orange);
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .client-name { font-size: 24px; font-weight: 700; color: var(--dark); letter-spacing: -0.02em; margin-bottom: 4px; }
+  .client-sub { font-size: 13px; color: var(--gray); }
+  .client-sub span { margin: 0 6px; opacity: 0.4; }
+  .client-badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 12px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-orange { background: var(--orange-light); color: var(--amber); }
+  .badge-gray { background: #f0f0f0; color: var(--gray); }
+
+  /* NAV */
+  .nav {
+    display: flex; gap: 6px; margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .nav-btn {
+    padding: 7px 16px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid var(--border); border-radius: 20px;
+    background: var(--white); color: var(--gray);
+    cursor: pointer; transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .nav-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .nav-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .kpi-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--dark); line-height: 1; }
+  .kpi-value.red { color: var(--red); }
+  .kpi-value.orange { color: var(--amber); }
+  .kpi-value.green { color: var(--green); }
+  .kpi-sub { font-size: 11px; color: #999; margin-top: 4px; }
+
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 18px 22px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--gray);
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-accent { border-left: 4px solid var(--orange); border-radius: 0 10px 10px 0; }
+  .card-accent-red { border-left: 4px solid var(--red); border-radius: 0 10px 10px 0; }
+  .card-accent-green { border-left: 4px solid var(--green); border-radius: 0 10px 10px 0; }
+  .card-danger { background: var(--red-light); border-color: #F1948A; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* TABLE ROWS */
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #F0F0F0;
+    font-size: 13px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-label { color: var(--gray); }
+  .row-value { font-weight: 600; color: var(--dark); }
+  .row-value.red { color: var(--red); }
+  .row-value.green { color: var(--green); }
+  .row-value.orange { color: var(--amber); }
+
+  /* BULLETS */
+  .bullet {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 10px; font-size: 13px; color: var(--dark); line-height: 1.6;
+  }
+  .bdot {
+    width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+  }
+  .bdot-orange { background: var(--orange); }
+  .bdot-red { background: var(--red); }
+  .bdot-green { background: var(--green); }
+
+  /* RISK BARS */
+  .risk-item { margin-bottom: 16px; }
+  .risk-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .risk-label-text { color: var(--gray); }
+  .risk-score { font-weight: 700; color: var(--dark); }
+  .risk-bar-bg { height: 8px; background: #F0F0F0; border-radius: 4px; overflow: hidden; }
+  .risk-bar-fill { height: 100%; border-radius: 4px; }
+  .risk-hint { display: flex; justify-content: space-between; font-size: 10px; color: #AAA; margin-top: 3px; }
+
+  /* TIMELINE */
+  .timeline { padding-left: 8px; }
+  .tl-item { display: flex; gap: 14px; margin-bottom: 18px; position: relative; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .tl-dot-orange { background: var(--orange); }
+  .tl-dot-red { background: var(--red); }
+  .tl-dot-gray { background: #CCC; }
+  .tl-line { width: 2px; background: #E8E8E8; flex: 1; min-height: 20px; margin-top: 4px; }
+  .tl-date { font-size: 11px; color: #999; margin-bottom: 3px; }
+  .tl-event { font-size: 13px; color: var(--dark); line-height: 1.55; }
+
+  /* RATING */
+  .rating-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .rating-agency { font-size: 12px; color: var(--gray); width: 56px; font-weight: 600; }
+  .rating-badge {
+    font-size: 14px; font-weight: 700; padding: 3px 12px;
+    border-radius: 5px;
+  }
+  .rating-neg { background: var(--red-light); color: var(--red); }
+  .rating-out { font-size: 12px; color: #999; }
+
+  /* SCORE TOTAL */
+  .score-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; margin-top: 6px; border-top: 2px solid var(--border);
+    font-size: 15px; font-weight: 700;
+  }
+
+  /* RECOMENDACAO */
+  .rec-box {
+    background: var(--red-light);
+    border: 1.5px solid #E74C3C;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+  }
+  .rec-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .rec-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #7B241C; }
+  .rec-badge {
+    font-size: 14px; font-weight: 700; padding: 4px 18px; border-radius: 14px;
+    background: var(--red); color: #fff;
+  }
+  .rec-text { font-size: 13px; color: #7B241C; line-height: 1.7; }
+
+  /* SEPARATOR */
+  .sep { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* SOURCE TAG */
+  .src { font-size: 10px; color: #BBB; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 8px; }
+
+  /* CHART WRAPPER */
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    font-size: 11px; color: #AAA; text-align: center;
+    margin-top: 28px; padding: 14px 20px;
+    border-top: 1px solid var(--border); line-height: 1.7;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+    .client-card { flex-direction: column; }
+    .header-title { display: none; }
+    .container { padding: 16px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">itaú</div>
+    <div class="header-div"></div>
+    <div class="header-title">Análise de Crédito Corporativo <span>· Raízen S.A.</span></div>
+  </div>
+  <div class="header-badge">
+    <span class="dot dot-red"></span>
+    Março 2026 · Confidencial · Uso Interno
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- CLIENT CARD -->
+  <div class="client-card">
+    <div>
+      <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Cliente em análise</div>
+      <div class="client-name">Raízen S.A.</div>
+      <div class="client-sub">Sucroenergético / Distribuição de Combustíveis <span>·</span> Grande Empresa <span>·</span> CNPJ 08.070.508/0001-78</div>
+    </div>
+    <div class="client-badges">
+      <span class="badge badge-red">CCC- S&P</span>
+      <span class="badge badge-red">Recup. Extrajudicial</span>
+      <span class="badge badge-orange">Risco Alto</span>
+      <span class="badge badge-gray">RAIZ4 · B3 N2</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="show('visao', this)">① Visão Geral</button>
+    <button class="nav-btn" onclick="show('dre', this)">② DRE & EBITDA</button>
+    <button class="nav-btn" onclick="show('divida', this)">③ Endividamento</button>
+    <button class="nav-btn" onclick="show('caixa', this)">④ Fluxo de Caixa</button>
+    <button class="nav-btn" onclick="show('rating', this)">⑤ Rating Simulado</button>
+    <button class="nav-btn" onclick="show('reest', this)">⑥ Reestruturação</button>
+    <button class="nav-btn" onclick="show('parecer', this)">⑦ Parecer Final</button>
+  </div>
+
+  <!-- ① VISÃO GERAL -->
+  <div id="sec-visao" class="section active">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Receita Líquida</div><div class="kpi-value">R$ 255 bi</div><div class="kpi-sub">Ano-safra 24'25</div></div>
+      <div class="kpi"><div class="kpi-label">EBITDA Ajustado</div><div class="kpi-value orange">R$ 10,8 bi</div><div class="kpi-sub">-26% vs. 23'24</div></div>
+      <div class="kpi"><div class="kpi-label">Resultado Líquido</div><div class="kpi-value red">-R$ 4,2 bi</div><div class="kpi-sub">vs. +R$ 0,6 bi anterior</div></div>
+      <div class="kpi"><div class="kpi-label">Alavancagem</div><div class="kpi-value red">5,3x</div><div class="kpi-sub">DL/EBITDA — 3T 25'26</div></div>
+      <div class="kpi"><div class="kpi-label">Dívida Líquida</div><div class="kpi-value red">R$ 55,3 bi</div><div class="kpi-sub">3T 25'26 (+43% a/a)</div></div>
+      <div class="kpi"><div class="kpi-label">Caixa Disponível</div><div class="kpi-value green">R$ 17,3 bi</div><div class="kpi-sub">>90% liquidez imediata</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card card-accent">
+        <div class="card-title">Perfil da Empresa</div>
+        <div class="row"><span class="row-label">Razão Social</span><span class="row-value">Raízen S.A. (RAIZ4)</span></div>
+        <div class="row"><span class="row-label">Controladores</span><span class="row-value">Shell 44% · Cosan 44%</span></div>
+        <div class="row"><span class="row-label">Setor</span><span class="row-value">Sucroenergético / Combustíveis</span></div>
+        <div class="row"><span class="row-label">Porte</span><span class="row-value">Grande Empresa — IBOVESPA B3</span></div>
+        <div class="row"><span class="row-label">Segmentos</span><span class="row-value">EAB · Combustíveis BR · Argentina</span></div>
+        <div class="row"><span class="row-label">Postos Shell</span><span class="row-value">≈ 6.800 unidades</span></div>
+        <div class="row"><span class="row-label">Moagem capacidade</span><span class="row-value">~80 Mt/ano</span></div>
+      </div>
+      <div class="card card-accent">
+        <div class="card-title">Posicionamento Competitivo</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Maior produtora de etanol e açúcar do mundo — escala global única e diversificação de commodities</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Líder em distribuição de combustíveis no Brasil com a marca Shell — forte diferencial premium</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Cadeia integrada: produção, distribuição, varejo e bioenergia — sinergias operacionais relevantes</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>E2G (etanol de 2ª geração) como diferencial estratégico de longo prazo — 5 plantas em implantação</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Refinaria própria em Buenos Aires — upgrade concluído em dezembro/2025</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Contexto Macroeconômico e Setorial</div>
+      <div class="two-col">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Fatores de Pressão</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Seca severa e queimadas (2023-24) reduziram produtividade da cana em ~30%, com efeitos remanescentes em 25'26</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Queda nos preços de açúcar no mercado internacional em 2025-26, pressionando margens do EAB</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Selic a ~14,9% — principal vetor de deterioração financeira, custo da dívida superior ao EBITDA gerado</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Informalidade no mercado de combustíveis (não-mistura de biodiesel) pressionando volumes e margens</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Fatores Favoráveis</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Preços do etanol resilientes — relação estoque/consumo favorável e adoção do E30 impulsionando demanda</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Combate à informalidade em combustíveis melhora gradualmente o ambiente competitivo</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Distribuição Brasil com 3 trimestres consecutivos de crescimento de volumes e margens (+50% EBITDA no 3T 25'26)</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Hedges de açúcar para 25'26 e 26'27 já contratados — reduz volatilidade de receita no curto prazo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② DRE & EBITDA -->
+  <div id="sec-dre" class="section">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Receita 24'25</div><div class="kpi-value">R$ 255 bi</div><div class="kpi-sub">+15,8% vs. 23'24</div></div>
+      <div class="kpi"><div class="kpi-label">Lucro Bruto</div><div class="kpi-value orange">R$ 11,8 bi</div><div class="kpi-sub">Margem bruta 4,6%</div></div>
+      <div class="kpi"><div class="kpi-label">EBITDA Ajustado</div><div class="kpi-value orange">R$ 10,8 bi</div><div class="kpi-sub">-25,9% vs. 23'24</div></div>
+      <div class="kpi"><div class="kpi-label">Res. Financeiro</div><div class="kpi-value red">-R$ 7,5 bi</div><div class="kpi-sub">69% do EBITDA consumido</div></div>
+      <div class="kpi"><div class="kpi-label">D&A</div><div class="kpi-value">R$ 9,4 bi</div><div class="kpi-sub">Intangível + imobilizado</div></div>
+      <div class="kpi"><div class="kpi-label">Resultado Líquido</div><div class="kpi-value red">-R$ 4,2 bi</div><div class="kpi-sub">vs. +R$ 0,6 bi em 23'24</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">EBITDA Ajustado por Segmento — Comparativo (R$ MM)</div>
+      <div class="chart-wrap" style="height: 260px;">
+        <canvas id="chart-ebitda"></canvas>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:12px;font-size:12px;color:var(--gray);flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:2px;background:#3A6B3A;display:inline-block;"></span>EAB — Etanol, Açúcar e Bioenergia</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:2px;background:#F07023;display:inline-block;"></span>Distribuição de Combustíveis Brasil</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:2px;background:#1A5276;display:inline-block;"></span>Distribuição de Combustíveis Argentina</span>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">DRE Consolidada Resumida (R$ MM)</div>
+        <div class="row"><span class="row-label">Receita operacional líquida</span><span class="row-value">255.269</span></div>
+        <div class="row"><span class="row-label">(-) Custo dos produtos vendidos</span><span class="row-value red">(243.432)</span></div>
+        <div class="row"><span class="row-label">Lucro bruto</span><span class="row-value">11.837</span></div>
+        <div class="row"><span class="row-label">(-) Despesas com vendas</span><span class="row-value red">(6.820)</span></div>
+        <div class="row"><span class="row-label">(-) Despesas G&A</span><span class="row-value red">(2.573)</span></div>
+        <div class="row"><span class="row-label">EBITDA</span><span class="row-value orange">13.669</span></div>
+        <div class="row"><span class="row-label">EBITDA Ajustado</span><span class="row-value orange">10.820</span></div>
+        <div class="row"><span class="row-label">(-) Resultado financeiro líquido</span><span class="row-value red">(7.463)</span></div>
+        <div class="row"><span class="row-label">(-) IR/CSLL</span><span class="row-value red">(1.031)</span></div>
+        <div class="row"><span class="row-label">Resultado líquido</span><span class="row-value red">(4.177)</span></div>
+        <div class="src">Fonte: Relatório de Resultados 4T 24'25</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Análise Interpretada dos Resultados</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Receita cresceu +16%, mas EBITDA ajustado caiu -26% — compressão severa de margens operacionais</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Resultado financeiro de -R$ 7,5 bi absorve 69% do EBITDA ajustado — principal destruidor de valor</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>EAB: EBITDA -18%, impulsionado por seca, queimadas, menor volume e piora do mix de produção</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Operações de Trading de açúcar branco e bunker geraram perdas expressivas não recorrentes no período</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Distribuição Brasil: crescimento consistente — margem EBITDA de R$ 183/m³ nos 9M 25'26 (+20% a/a)</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Argentina: margem recuperada após conclusão do upgrade da refinaria em dezembro/2025</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Ganhos de eficiência de R$ 600 MM nos 9M 25'26 demonstram capacidade de redução de custos da gestão</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ ENDIVIDAMENTO -->
+  <div id="sec-divida" class="section">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Dívida Bruta (3T 25'26)</div><div class="kpi-value red">R$ 70 bi</div><div class="kpi-sub">+32,6% vs. 3T 24'25</div></div>
+      <div class="kpi"><div class="kpi-label">Dívida Líquida</div><div class="kpi-value red">R$ 55,3 bi</div><div class="kpi-sub">+43,4% vs. 3T 24'25</div></div>
+      <div class="kpi"><div class="kpi-label">DL/EBITDA LTM</div><div class="kpi-value red">5,3x</div><div class="kpi-sub">vs. 1,3x em 4T 23'24</div></div>
+      <div class="kpi"><div class="kpi-label">Prazo Médio</div><div class="kpi-value orange">7,6 anos</div><div class="kpi-sub">Alongado de 6,5 anos</div></div>
+      <div class="kpi"><div class="kpi-label">Custo Dívida Bruta</div><div class="kpi-value red">R$ 7,7 bi</div><div class="kpi-sub">9M 25'26 (+94% a/a)</div></div>
+      <div class="kpi"><div class="kpi-label">Moeda Estrangeira</div><div class="kpi-value orange">73%</div><div class="kpi-sub">Dólar e Euro</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Evolução da Alavancagem DL/EBITDA (histórico trimestral)</div>
+      <div class="chart-wrap" style="height: 220px;">
+        <canvas id="chart-alav"></canvas>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Cronograma de Amortização (R$ MM)</div>
+        <div class="row"><span class="row-label">25'26</span><span class="row-value red">4.019</span></div>
+        <div class="row"><span class="row-label">26'27</span><span class="row-value red">5.361</span></div>
+        <div class="row"><span class="row-label">27'28</span><span class="row-value orange">7.822</span></div>
+        <div class="row"><span class="row-label">28'29</span><span class="row-value orange">7.183</span></div>
+        <div class="row"><span class="row-label">29'30</span><span class="row-value orange">7.573</span></div>
+        <div class="row"><span class="row-label">30'31 a 33'34</span><span class="row-value">8.515</span></div>
+        <div class="row"><span class="row-label">Pós 33'34</span><span class="row-value red">20.706</span></div>
+        <div class="row"><span class="row-label">(-) Caixa e TVM</span><span class="row-value green">(17.307)</span></div>
+        <div class="src">Fonte: Relatório 3T 25'26 — Anexo X</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Avaliação da Estrutura de Capital</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Alavancagem saltou de 1,3x (4T 23'24) para 5,3x (3T 25'26) — deterioração de 308% em 18 meses</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Patrimônio líquido negativo de -R$ 1,1 bi em 3T 25'26 — indicador formal de insolvência patrimonial</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>97% da dívida em moeda estrangeira no 4T 24'25 — risco cambial elevado ante depreciação do real</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>Prazo médio de 7,6 anos reduz risco de refinanciamento imediato — fator mitigante relevante</div>
+        <div class="bullet"><span class="bdot bdot-orange"></span>RCF de US$ 1 bi disponível como reserva adicional de liquidez</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Encargos financeiros futuros superiores à geração de EBITDA projetada — estrutura insustentável</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ FLUXO DE CAIXA -->
+  <div id="sec-caixa" class="section">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">FCO — 9M 25'26</div><div class="kpi-value red">-R$ 11,3 bi</div><div class="kpi-sub">Consumo operacional</div></div>
+      <div class="kpi"><div class="kpi-label">CAPEX — 9M 25'26</div><div class="kpi-value orange">R$ 5,7 bi</div><div class="kpi-sub">-22% vs. 9M 24'25</div></div>
+      <div class="kpi"><div class="kpi-label">Venda de Ativos</div><div class="kpi-value green">R$ 3,1 bi</div><div class="kpi-sub">Recebidos nos 9M 25'26</div></div>
+      <div class="kpi"><div class="kpi-label">A Receber</div><div class="kpi-value orange">R$ 1,4–1,5 bi</div><div class="kpi-sub">Desinvest. já anunciados</div></div>
+      <div class="kpi"><div class="kpi-label">Caixa Final 3T 25'26</div><div class="kpi-value green">R$ 17,3 bi</div><div class="kpi-sub">>90% liquidez imediata</div></div>
+      <div class="kpi"><div class="kpi-label">Ger. Primária 24'25</div><div class="kpi-value red">R$ 3,3 bi</div><div class="kpi-sub">-55% vs. 23'24</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card card-accent-red">
+        <div class="card-title">Pressões de Consumo de Caixa</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Substituição de R$ 9,2 bi em convênios de fornecedores (risco sacado) por dívida de longo prazo — saída de caixa operacional no curto prazo</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Não renovação de R$ 3,8 bi em adiantamentos de clientes de açúcar e energia</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Pagamento de juros de R$ 4,2 bi nos 9M 25'26, reflexo do elevado saldo de dívida e CDI a 14,9%</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Consumo de capital de giro pelos estoques de açúcar e etanol formados ao longo da safra</div>
+      </div>
+      <div class="card card-accent-green">
+        <div class="card-title">Fatores Mitigantes</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Redução de CAPEX de ~R$ 3 bi versus ano anterior — disciplina financeira evidente no plano de transformação</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>R$ 3,1 bi recebidos com venda de ativos (GD solar, usinas, Paraguai) nos 9M 25'26</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>R$ 1,4–1,5 bi adicionais a receber com conclusão de desinvestimentos já anunciados (incl. Argentina)</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>FCO excluindo iniciativas financeiras mostra melhora de ~R$ 400 MM vs. período anterior</div>
+      </div>
+    </div>
+    <div class="card card-accent-red">
+      <div class="card-title">Avaliação de Liquidez para Decisão de Crédito</div>
+      <div class="row"><span class="row-label">Posição de caixa e TVM</span><span class="row-value green">R$ 17,3 bi — robusta no curto prazo</span></div>
+      <div class="row"><span class="row-label">Vencimentos de dívida em 25'26</span><span class="row-value orange">R$ 8,2 bi — pressionado</span></div>
+      <div class="row"><span class="row-label">Cobertura caixa / vencimentos CP</span><span class="row-value orange">2,1x — adequada mas em queda</span></div>
+      <div class="row"><span class="row-label">Geração primária de caixa (EBITDA - CAPEX rec.)</span><span class="row-value red">R$ 3,3 bi — insuficiente para serviço da dívida</span></div>
+      <div class="row"><span class="row-label">Trajetória estrutural sem recapitalização</span><span class="row-value red">Insustentável — burn rate elevado</span></div>
+    </div>
+  </div>
+
+  <!-- ⑤ RATING SIMULADO -->
+  <div id="sec-rating" class="section">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Rating Interno Simulado</div><div class="kpi-value red">B-</div><div class="kpi-sub">Grau especulativo elevado</div></div>
+      <div class="kpi"><div class="kpi-label">PD Estimada (1 ano)</div><div class="kpi-value red">18–25%</div><div class="kpi-sub">Alta probabilidade de default</div></div>
+      <div class="kpi"><div class="kpi-label">Score Qualitativo</div><div class="kpi-value orange">44/100</div><div class="kpi-sub">Deterioração acelerada</div></div>
+      <div class="kpi"><div class="kpi-label">Classificação de Risco</div><div class="kpi-value red">Alto</div><div class="kpi-sub">Requer condicionantes</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ratings Externos — Março 2026</div>
+      <div class="rating-row">
+        <span class="rating-agency">S&P</span>
+        <span class="rating-badge rating-neg">CCC-</span>
+        <span class="rating-out">Perspectiva negativa · 2º downgrade em menos de 1 mês · antes: AAA local</span>
+      </div>
+      <div class="rating-row">
+        <span class="rating-agency">Moody's</span>
+        <span class="rating-badge rating-neg">CCC</span>
+        <span class="rating-out">Grau altamente especulativo · rebaixamento recente</span>
+      </div>
+      <div class="rating-row">
+        <span class="rating-agency">Fitch</span>
+        <span class="rating-badge rating-neg">CCC+</span>
+        <span class="rating-out">Perspectiva negativa · rebaixamento recente</span>
+      </div>
+      <div class="sep"></div>
+      <div class="src">Queda excepcional: de AAA local (23'24) para CCC- (mar/26) em menos de 18 meses</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Score Qualitativo com Breakdown Analítico</div>
+      <div class="risk-item">
+        <div class="risk-header"><span class="risk-label-text">Posicionamento competitivo (peso 25%)</span><span class="risk-score">18/25</span></div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:72%;background:#F07023;"></div></div>
+        <div class="risk-hint"><span>Escala global, marca Shell, integração da cadeia</span><span>Pressão climática e informalidade setorial</span></div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-header"><span class="risk-label-text">Qualidade dos controladores (peso 20%)</span><span class="risk-score">12/20</span></div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:60%;background:#D35400;"></div></div>
+        <div class="risk-hint"><span>Shell e Cosan: porte, credibilidade e compromisso formal</span><span>Negociações interrompidas em mar/26</span></div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-header"><span class="risk-label-text">Estrutura de capital (peso 25%)</span><span class="risk-score">5/25</span></div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:20%;background:#C0392B;"></div></div>
+        <div class="risk-hint"><span>—</span><span>Alavancagem 5,3x · PL negativo · CCC-</span></div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-header"><span class="risk-label-text">Geração de caixa (peso 20%)</span><span class="risk-score">4/20</span></div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:20%;background:#C0392B;"></div></div>
+        <div class="risk-hint"><span>—</span><span>FCO negativo · juros superam EBITDA gerado</span></div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-header"><span class="risk-label-text">Liquidez (peso 10%)</span><span class="risk-score">5/10</span></div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:50%;background:#F07023;"></div></div>
+        <div class="risk-hint"><span>Caixa de R$ 17,3 bi com liquidez imediata</span><span>Burn rate estruturalmente elevado</span></div>
+      </div>
+      <div class="score-total">
+        <span>Score total</span>
+        <span style="color:var(--red);">44 / 100</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Fatores que Poderiam Alterar o Rating</div>
+      <div class="two-col">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Upgrade</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Conclusão da recapitalização de R$ 4 bi pelos controladores com aprovação dos credores internacionais</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Redução da alavancagem para abaixo de 4,0x com melhora da geração de caixa operacional</div>
+          <div class="bullet"><span class="bdot bdot-green"></span>Venda da Argentina com uso integral de recursos para amortização de dívida</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Downgrade / Default</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Fracasso nas negociações do plano de recuperação extrajudicial ou impasse prolongado entre controladores</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Deterioração adicional de caixa abaixo de R$ 8 bi sem perspectiva de recapitalização</div>
+          <div class="bullet"><span class="bdot bdot-red"></span>Nova safra com produtividade reduzida e queda adicional nos preços de açúcar/etanol</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ REESTRUTURAÇÃO -->
+  <div id="sec-reest" class="section">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Aporte Proposto</div><div class="kpi-value orange">R$ 4 bi</div><div class="kpi-sub">Shell R$ 3,5 bi + Ometto R$ 0,5 bi</div></div>
+      <div class="kpi"><div class="kpi-label">Conversão Dívida</div><div class="kpi-value orange">40%</div><div class="kpi-sub">Em participação acionária</div></div>
+      <div class="kpi"><div class="kpi-label">Ativos Realizados/Anunciados</div><div class="kpi-value green">~R$ 5 bi</div><div class="kpi-sub">Desinvestimentos totais</div></div>
+      <div class="kpi"><div class="kpi-label">Status Atual</div><div class="kpi-value red">Recup. Extrajud.</div><div class="kpi-sub">Pedido em março/2026</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Linha do Tempo da Reestruturação</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot tl-dot-orange"></div><div class="tl-line"></div></div>
+          <div><div class="tl-date">Abril/2025 — Novembro/2025</div><div class="tl-event">Plano de Transformação: simplificação operacional, corte de CAPEX (-R$ 3 bi), venda de 6 usinas, GD solar, saída do Paraguai e revisão da operação de trading</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot tl-dot-orange"></div><div class="tl-line"></div></div>
+          <div><div class="tl-date">Fevereiro/2026</div><div class="tl-event">Impairment de R$ 11,1 bi (sem efeito caixa). Rebaixamentos de rating pelas principais agências nacionais e internacionais. Anúncio de assessores financeiros e legais para avaliação de alternativas estruturais</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot tl-dot-red"></div><div class="tl-line"></div></div>
+          <div><div class="tl-date">4 de Março/2026</div><div class="tl-event">Fato Relevante: proposta de aporte de R$ 4 bi (Shell R$ 3,5 bi + Aguassanta/Ometto R$ 0,5 bi). Avaliação de recuperação extrajudicial anunciada. Plano inclui conversão de 40% da dívida em equity e alongamento do saldo remanescente</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot tl-dot-red"></div><div class="tl-line"></div></div>
+          <div><div class="tl-date">6 de Março/2026</div><div class="tl-event">S&P rebaixa para CCC- — segundo corte em menos de 1 mês. Cosan e Shell interrompem negociações mais amplas sobre plano de resgate</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot tl-dot-red"></div></div>
+          <div><div class="tl-date">Março/2026 — Status atual</div><div class="tl-event">Pedido formal de recuperação extrajudicial. Negociação com credores financeiros em andamento. Venda da Argentina em estágio avançado, com conclusão esperada em 2026</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card card-accent-green">
+        <div class="card-title">Elementos Favoráveis à Recuperação</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Negócio de Distribuição Brasil com saúde operacional resiliente — 3 trimestres consecutivos de crescimento de margens</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Caixa de R$ 17,3 bi assegura capacidade operacional no curto/médio prazo</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Ativos de alta qualidade e valor realizável (Argentina, E2G, canaviais) para processo de deleveraging</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Comprometimento formal dos controladores com aporte de capital — reduz risco de falência desordenada</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Prazo médio de dívida de 7,6 anos sem concentração de vencimentos críticos no curto prazo</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Impairment de R$ 11,1 bi é não-caixa e reversível mediante melhora das condições de mercado</div>
+      </div>
+      <div class="card card-accent-red">
+        <div class="card-title">Riscos e Incertezas Críticas</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Negociações entre Cosan e Shell foram interrompidas em março/26 — risco real de impasse societário e bloqueio do plano</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Apenas 50% dos credores são financeiros — complexidade elevada para aprovação do plano extrajudicial (exige >50% da dívida)</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Conversão de 40% da dívida em equity implica haircut relevante para bonistas internacionais — negociação complexa</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Patrimônio líquido negativo e impairments poderão ser revertidos apenas com equacionamento da estrutura de capital</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Risco de contágio em covenants não financeiros — contrato de entrega de etanol (US$ 600 MM até 2034)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ PARECER FINAL -->
+  <div id="sec-parecer" class="section">
+    <div class="card card-accent">
+      <div class="card-title">Sumário Executivo — Para Deliberação do Comitê de Crédito</div>
+      <p style="font-size:14px;color:var(--dark);line-height:1.75;">
+        A <strong>Raízen S.A.</strong> apresenta-se em momento de aguda fragilidade financeira, resultado da convergência de fatores operacionais adversos — secas, queimadas e pressão de custos — com uma estrutura de capital que se tornou insustentável diante da Selic elevada e do ciclo intenso de investimentos em E2G. O segmento de Distribuição de Combustíveis Brasil demonstra saúde operacional resiliente e crescente, porém insuficiente para compensar o peso do serviço da dívida (R$ 7,5 bi em resultado financeiro negativo no ano-safra 24'25). A recapitalização de R$ 4 bi e o processo de recuperação extrajudicial ora em curso representam o caminho necessário para a sustentabilidade da empresa, porém com desfecho ainda incerto, dado o impasse entre os controladores e a complexidade da negociação com credores diversificados.
+      </p>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Pontos Favoráveis</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Escala e posicionamento competitivo globais incontestáveis — maior produtora de etanol e açúcar do mundo</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Marca Shell e rede de 6.800 postos conferem vantagem competitiva durável na distribuição de combustíveis</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Liquidez imediata de R$ 17,3 bi assegura capacidade operacional no curto/médio prazo</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Ganhos de eficiência de R$ 600 MM nos 9M 25'26 demonstram execução do plano de transformação</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Comprometimento formal dos controladores (Shell e Ometto) com injeção de capital</div>
+        <div class="bullet"><span class="bdot bdot-green"></span>Prazo médio de dívida de 7,6 anos — sem concentração de vencimentos imediata</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Pontos de Atenção</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Alavancagem de 5,3x e patrimônio líquido negativo — insolvência patrimonial formal registrada</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>FCO estruturalmente negativo sem recapitalização — geração operacional não cobre serviço da dívida</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Impasse entre Cosan e Shell em março/26 — risco de execução do plano de reestruturação</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Recuperação extrajudicial complexa — 50% de credores não financeiros dificulta aprovação do plano</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Ratings CCC- (S&P) e CCC (Moody's) — restrição severa de acesso ao mercado de capitais</div>
+        <div class="bullet"><span class="bdot bdot-red"></span>Impairment de R$ 11,1 bi no 3T 25'26 reflete percepção de que a empresa pode não recuperar ativos fiscais e operacionais</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Condicionantes Sugeridos para Eventuais Operações</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Aprovação formal do plano de recuperação extrajudicial com adesão dos principais credores internacionais (>50% do saldo devedor)</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Comprovação de injeção de capital de no mínimo R$ 3 bi pelos controladores, com cronograma definido e recursos efetivamente desembolsados</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Covenant de alavancagem máxima: DL/EBITDA ≤ 4,0x ao final do ano-safra 25'26 e ≤ 3,0x ao final do 26'27, com reporte trimestral</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Cross default vinculado a qualquer evento de inadimplência em bonds internacionais (Senior Notes / Green Notes) ou debêntures locais</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Manutenção de posição mínima de caixa de R$ 8 bi ao longo de toda a vigência de qualquer nova operação de crédito</div>
+      <div class="bullet"><span class="bdot bdot-orange"></span>Operações de crédito garantidas por cessão fiduciária de recebíveis do segmento Distribuição Brasil ou garantias reais de ativos elegíveis</div>
+    </div>
+    <div class="rec-box">
+      <div class="rec-header">
+        <div class="rec-title">Classificação de Risco Interno</div>
+        <span class="rec-badge">ALTO</span>
+      </div>
+      <div class="rec-text">
+        <strong>Recomendação ao Comitê:</strong> Suspensão de novas concessões de crédito não garantido até a conclusão do processo de recuperação extrajudicial e a comprovação efetiva de injeção de capital pelos controladores. Operações de crédito comercial estruturadas (trade finance, supply chain finance, desconto de recebíveis) poderão ser avaliadas pontualmente, mediante análise individual com garantias reais, cessão de recebíveis e cláusulas de vencimento antecipado vinculadas à manutenção do plano de reestruturação. A liberação de linhas de crédito corporativo convencionais fica condicionada à redução da alavancagem para patamar inferior a 4,0x DL/EBITDA e à normalização dos ratings externos para grau especulativo estável (mínimo B-).
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    Análise elaborada com base em documentos públicos da Raízen S.A.: Relatório de Resultados 4T 24'25 (mai/2025), Relatório de Resultados 3T 25'26 (fev/2026), Apresentações de Resultados, Releases e Transcrições das Teleconferências de Resultados. Contexto de reestruturação baseado em informações públicas e notícias de mercado até março/2026.<br>
+    Este material é de uso interno e confidencial. Não constitui recomendação formal de crédito nem oferta de serviços financeiros. As análises e opiniões expressas são do analista responsável e não representam posição oficial do Itaú Unibanco S.A. Sujeito à revisão e aprovação pelo Comitê de Crédito competente.<br>
+    <strong>Itaú BBA — Diretoria de Crédito Corporativo · Área de Crédito ESG · Março de 2026</strong>
+  </div>
+
+</div>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    btn.classList.add('active');
+    setTimeout(buildCharts, 50);
+  }
+
+  var chartsBuilt = {};
+
+  function buildCharts() {
+    if (!chartsBuilt['ebitda'] && document.getElementById('chart-ebitda')) {
+      chartsBuilt['ebitda'] = true;
+      new Chart(document.getElementById('chart-ebitda'), {
+        type: 'bar',
+        data: {
+          labels: ["23'24", "24'25", "9M 24'25", "9M 25'26"],
+          datasets: [
+            { label: 'EAB', data: [7278, 5964, 5482, 3943], backgroundColor: '#3A6B3A' },
+            { label: 'Dist. Brasil', data: [4576, 3505, 3150, 3999], backgroundColor: '#F07023' },
+            { label: 'Dist. Argentina', data: [2660, 2508, 1824, 1307], backgroundColor: '#1A5276' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { stacked: true, ticks: { autoSkip: false } },
+            y: { stacked: true, ticks: { callback: function(v) { return 'R$' + (v/1000).toFixed(0) + 'k'; } } }
+          }
+        }
+      });
+    }
+
+    if (!chartsBuilt['alav'] && document.getElementById('chart-alav')) {
+      chartsBuilt['alav'] = true;
+      new Chart(document.getElementById('chart-alav'), {
+        type: 'line',
+        data: {
+          labels: ["4T 22'23","4T 23'24","1T 24'25","2T 24'25","3T 24'25","4T 24'25","1T 25'26","2T 25'26","3T 25'26"],
+          datasets: [{
+            label: 'DL/EBITDA',
+            data: [1.3, 1.3, 2.0, 1.9, 1.9, 3.2, 4.5, 5.1, 5.3],
+            borderColor: '#C0392B',
+            backgroundColor: 'rgba(192,57,43,0.07)',
+            tension: 0.35, fill: true, pointRadius: 5,
+            pointBackgroundColor: '#C0392B'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            annotation: {}
+          },
+          scales: {
+            y: {
+              min: 0, max: 6.5,
+              ticks: { callback: function(v) { return v.toFixed(1) + 'x'; } }
+            },
+            x: { ticks: { autoSkip: false, maxRotation: 35 } }
+          }
+        }
+      });
+    }
+  }
+
+  setTimeout(buildCharts, 300);
+</script>
+</body>
+</html>
